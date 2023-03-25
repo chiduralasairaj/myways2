@@ -1,0 +1,65 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function App() {
+  const [characters, setCharacters] = useState([]);
+  const [filteredCharacters, setFilteredCharacters] = useState([]);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("name");
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      const result = await axios("https://disneyapi.dev/api/characters");
+      setCharacters(result.data);
+      setFilteredCharacters(result.data);
+    };
+    fetchCharacters();
+  }, []);
+
+  const handleSort = (attribute) => {
+    const order = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(order);
+    setSortBy(attribute);
+
+    const sortedCharacters = [...filteredCharacters].sort((a, b) =>
+      order === "asc" ? a[attribute].localeCompare(b[attribute]) : b[attribute].localeCompare(a[attribute])
+    );
+    setFilteredCharacters(sortedCharacters);
+  };
+
+  const handleFilter = (event) => {
+    const searchValue = event.target.value.toLowerCase();
+    const filteredCharacters = characters.filter((character) =>
+      character.name.toLowerCase().includes(searchValue)
+    );
+    setFilteredCharacters(filteredCharacters);
+  };
+
+  return (
+    <div>
+      <input type="text" onChange={handleFilter} placeholder="Search by name" />
+      <table>
+        <thead>
+          <tr>
+            <th onClick={() => handleSort("name")}>Name</th>
+            <th onClick={() => handleSort("gender")}>Gender</th>
+            <th onClick={() => handleSort("species")}>Species</th>
+            <th onClick={() => handleSort("status")}>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCharacters.map((character) => (
+            <tr key={character.id}>
+              <td>{character.name}</td>
+              <td>{character.gender}</td>
+              <td>{character.species}</td>
+              <td>{character.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default App;
